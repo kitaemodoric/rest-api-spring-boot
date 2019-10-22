@@ -38,9 +38,10 @@ public class EventControllerTests {
         EventDto event = new EventDto().builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
-                .beginEnrollmentDateTime(LocalDateTime.of(2018,11,23,14,21))
-                .closeEnrollmentDateTime(LocalDateTime.of(2018,11,24,14,21))
-                .endEventDateTime(LocalDateTime.of(2018,11,26,14,21))
+                .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -52,13 +53,13 @@ public class EventControllerTests {
                 .accept(MediaTypes.HAL_JSON)
                 .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
-                .andExpect(status().isCreated())
-        .andExpect(jsonPath("id").exists())
-        .andExpect(header().exists(HttpHeaders.LOCATION))
-        .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-        .andExpect(jsonPath("id").value(Matchers.not(100)))
-        .andExpect(jsonPath("free").value(Matchers.not(true)))
-        .andExpect(jsonPath("eventStatus").value(Matchers.not(EventStatus.DRAFT)));
+                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(header().exists(HttpHeaders.LOCATION))
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("id").value(Matchers.not(100)))
+                .andExpect(jsonPath("free").value(Matchers.not(true)))
+                .andExpect(jsonPath("eventStatus").value(Matchers.not(EventStatus.DRAFT)));
     }
 
     @Test
@@ -67,9 +68,10 @@ public class EventControllerTests {
                 .id(100)
                 .name("Spring")
                 .description("REST API Development with Spring")
-                .beginEnrollmentDateTime(LocalDateTime.of(2018,11,23,14,21))
-                .closeEnrollmentDateTime(LocalDateTime.of(2018,11,24,14,21))
-                .endEventDateTime(LocalDateTime.of(2018,11,26,14,21))
+                .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
                 .basePrice(100)
                 .maxPrice(200)
                 .limitOfEnrollment(100)
@@ -86,9 +88,40 @@ public class EventControllerTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
 
-                ;
+        ;
 
     }
 
+    @Test
+    public void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    public void createEvent_Bad_Request_Wrong_Input() throws Exception {
+        EventDto eventDto = EventDto.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
+                .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                .basePrice(10000)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("강남역 D2 스타텁 팩토리")
+                .build();
+
+        this.mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
+    }
 
 }
