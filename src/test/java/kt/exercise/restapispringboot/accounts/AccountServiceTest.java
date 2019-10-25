@@ -1,6 +1,9 @@
 package kt.exercise.restapispringboot.accounts;
 
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +25,9 @@ import static org.assertj.core.api.Assertions.fail;
 @ActiveProfiles("test")
 public class AccountServiceTest {
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
     @Autowired
     AccountService accountService;
 
@@ -42,8 +48,8 @@ public class AccountServiceTest {
         this.accountService.saveAccount(account);
 
         //When
-        UserDetailsService userDetailsService = (UserDetailsService) accountService;
-        UserDetails userDetails = userDetailsService.loadUserByUsername("kitae@modoric.com");
+        UserDetailsService userDetailsService = accountService;
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         //Then
         assertThat(this.passwordEncoder.matches(password, userDetails.getPassword())).isTrue();
@@ -51,14 +57,12 @@ public class AccountServiceTest {
 
     @Test
     public void findByUsernameFail() {
+        //Expected
         String username = "random@email.com";
+        expectedException.expect(UsernameNotFoundException.class);
+        expectedException.expectMessage(Matchers.containsString(username));
 
-        try{
-            accountService.loadUserByUsername(username);
-            fail("supposed to be failed");
-        } catch (UsernameNotFoundException e) {
-            assertThat(e.getMessage()).containsSequence(username);
-        }
+        accountService.loadUserByUsername(username);
 
     }
 
